@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대둔산 QR 현장점검</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: "Noto Sans KR", sans-serif; }
+html, body { width: 100%; background: #f0f4f0; }
+
+/* 로딩 화면 */
+.loading {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 100vh;
+  background: #f0f4f0;
+}
+.loading-icon { font-size: 48px; margin-bottom: 16px; animation: spin 1s linear infinite; }
+@keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+.loading-text { font-size: 16px; color: #555; }
+
+/* 정상 화면 */
+.screen { display: none; }
+.top-bar { width: 100%; background: #1B5E20; padding: 16px 20px; text-align: center; }
+.top-bar .sub { color: #A5D6A7; font-size: 13px; margin-bottom: 4px; }
+.top-bar .title { color: #fff; font-size: 22px; font-weight: 800; line-height: 1.3; }
+.card { background: #fff; border-radius: 20px; margin: 16px auto; padding: 24px 20px; width: calc(100% - 32px); max-width: 480px; box-shadow: 0 4px 24px rgba(0,0,0,.10); }
+.badge-ok { display: inline-flex; align-items: center; gap: 6px; background: #e8f5e9; border: 1.5px solid #388E3C; border-radius: 30px; padding: 10px 18px; margin-bottom: 20px; font-size: 14px; color: #1B5E20; font-weight: 700; }
+.facility-hero { font-size: 28px; font-weight: 900; color: #1B5E20; text-align: center; margin-bottom: 20px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.info-cell { padding: 14px 16px; border-bottom: 1px solid #e0e0e0; }
+.info-cell:nth-child(odd) { border-right: 1px solid #e0e0e0; background: #fafafa; }
+.info-cell:nth-last-child(-n+2) { border-bottom: none; }
+.info-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+.info-value { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+.gps-row { background: #f5f5f5; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; color: #555; }
+.notice-box { background: #f9fbe7; border-left: 4px solid #aed581; border-radius: 0 8px 8px 0; padding: 14px 16px; margin-bottom: 20px; font-size: 14px; color: #558b2f; line-height: 1.7; }
+.btn-start { display: block; background: #1B5E20; color: #fff; text-align: center; padding: 18px; border-radius: 14px; font-size: 18px; font-weight: 800; text-decoration: none; margin-bottom: 12px; }
+.btn-map { display: block; background: #fff; color: #1B5E20; text-align: center; padding: 15px; border-radius: 14px; font-size: 16px; font-weight: 600; text-decoration: none; border: 2px solid #1B5E20; }
+
+/* 위조 화면 */
+.fake-screen { display: none; background: #fff3f3; min-height: 100vh; }
+.fake-top { width: 100%; background: #b71c1c; padding: 16px 20px; text-align: center; }
+.fake-top .sub { color: #ef9a9a; font-size: 13px; margin-bottom: 4px; }
+.fake-top .title { color: #fff; font-size: 20px; font-weight: 800; }
+.fake-card { background: #fff; border-radius: 20px; margin: 16px auto; padding: 28px 20px; width: calc(100% - 32px); max-width: 480px; box-shadow: 0 4px 24px rgba(200,0,0,.15); border-top: 5px solid #f44336; }
+.icon-big { font-size: 72px; display: block; text-align: center; margin-bottom: 16px; animation: shake .4s ease infinite alternate; }
+@keyframes shake { 0%{transform:rotate(-6deg)} 100%{transform:rotate(6deg)} }
+.title-warn { font-size: 24px; font-weight: 900; color: #b71c1c; text-align: center; margin-bottom: 8px; }
+.subtitle { font-size: 15px; color: #555; text-align: center; margin-bottom: 24px; line-height: 1.7; }
+.err-box { background: #ffebee; border-radius: 12px; padding: 16px; margin-bottom: 20px; border-left: 4px solid #f44336; }
+.err-title { font-size: 13px; color: #b71c1c; font-weight: 700; margin-bottom: 6px; }
+.err-msg { font-size: 15px; color: #c62828; font-weight: 600; }
+.action-box { background: #fff8e1; border-radius: 12px; padding: 16px; margin-bottom: 20px; border-left: 4px solid #ffa000; }
+.action-title { font-size: 14px; font-weight: 700; color: #e65100; margin-bottom: 12px; }
+.action-item { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: #555; margin-bottom: 10px; line-height: 1.5; }
+.action-num { background: #f44336; color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.btn-call { display: block; background: #f44336; color: #fff; text-align: center; padding: 18px; border-radius: 14px; font-size: 17px; font-weight: 800; text-decoration: none; margin-bottom: 12px; }
+.btn-back { display: block; background: #fff; color: #f44336; text-align: center; padding: 15px; border-radius: 14px; font-size: 15px; font-weight: 600; text-decoration: none; border: 2px solid #f44336; }
+.legal-box { background: #fce4ec; border-radius: 10px; padding: 16px; margin-top: 16px; font-size: 13px; color: #880e4f; line-height: 1.8; text-align: center; }
+
+.footer { font-size: 12px; color: #aaa; text-align: center; margin: 16px; padding-bottom: 30px; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<!-- 로딩 화면 -->
+<div class="loading" id="loading">
+  <div class="loading-icon">🔐</div>
+  <div class="loading-text">보안 인증 중...</div>
+</div>
+
+<!-- 정상 화면 -->
+<div class="screen" id="okScreen">
+  <div class="top-bar">
+    <div class="sub">• 완주군 공식 시스템 •</div>
+    <div class="title">완주군 대둔산도립공원<br>시설물 현장점검</div>
+  </div>
+  <div class="card">
+    <div><div class="badge-ok">🔐 보안 인증 완료 · 공식 등록 시설물</div></div>
+    <div class="facility-hero" id="facName">-</div>
+    <div class="info-grid">
+      <div class="info-cell"><div class="info-label">🗺 구역코드</div><div class="info-value" id="areaCode">-</div></div>
+      <div class="info-cell"><div class="info-label">📌 위치코드</div><div class="info-value" id="locCode">-</div></div>
+      <div class="info-cell"><div class="info-label">🔖 시설물 유형</div><div class="info-value" id="facType">-</div></div>
+      <div class="info-cell"><div class="info-label">🏷 시설물명</div><div class="info-value" id="facName2">-</div></div>
+    </div>
+    <div class="gps-row">🛰 GPS 수집 중... (점검 시작 후 자동 저장)</div>
+    <div class="notice-box">이 QR코드는 완주군 대둔산도립공원이 공식 운영하는<br><b>보안 인증된</b> 시설물 점검 시스템입니다.<br>아래 버튼을 눌러 점검 또는 파손 신고를 해주세요.</div>
+    <a class="btn-start" id="btnStart" href="#">✅ 점검 · 신고 시작하기</a>
+    <a class="btn-map" id="btnMap" href="#" target="_blank">🗺 현장 위치 지도 보기</a>
+  </div>
+  <div class="footer">완주군청 체육공원과 · 대둔산도립공원 관리사무소<br>본 시스템은 완주군 공식 시설물 관리 시스템입니다.</div>
+</div>
+
+<!-- 위조 화면 -->
+<div class="fake-screen" id="fakeScreen">
+  <div class="fake-top">
+    <div class="sub">⚠ 보안 경고</div>
+    <div class="title">위조 QR코드 감지됨</div>
+  </div>
+  <div class="fake-card">
+    <span class="icon-big">🚨</span>
+    <div class="title-warn">위조 QR코드입니다!</div>
+    <div class="subtitle">이 QR코드는 공식 시스템에<br><b>등록되지 않은 코드</b>입니다.<br>즉시 사용을 중단하세요.</div>
+    <div class="err-box">
+      <div class="err-title">🔍 오류 내용</div>
+      <div class="err-msg" id="errMsg">보안서명 불일치</div>
+    </div>
+    <div class="action-box">
+      <div class="action-title">🛡 즉시 조치사항</div>
+      <div class="action-item"><span class="action-num">1</span><span>이 QR코드를 다시 스캔하거나 링크를 클릭하지 마세요</span></div>
+      <div class="action-item"><span class="action-num">2</span><span>해당 QR코드를 제거하거나 테이프로 덮어두세요</span></div>
+      <div class="action-item"><span class="action-num">3</span><span>QR코드 위치, 사진을 찍어 담당자에게 신고해 주세요</span></div>
+    </div>
+    <a class="btn-call" href="tel:063-290-2742">📞 담당자 즉시 신고 · 063-290-2742</a>
+    <a class="btn-back" onclick="history.back();return false;" href="#">← 이전 화면으로 돌아가기</a>
+    <div class="legal-box">⚖ 공공시설물 QR코드 위조·변조는<br><b>형법 제227조의2(공전자기록 위작·변작죄)</b>에 해당하며<br>10년 이하의 징역에 처해질 수 있습니다.</div>
+  </div>
+  <div class="footer">완주군청 체육공원과 · 대둔산도립공원 관리사무소<br>본 시스템은 완주군 공식 시설물 관리 시스템입니다.</div>
+</div>
+
+<script>
+// ── 설정값 ──────────────────────────────────────
+var API_URL   = 'https://script.google.com/macros/s/AKfycbycVSeoX_2NPUzDnIl2qSCvkpq2TEvZ_M9Bwf7WBNXraXxqyeDq1d1p3Ji6smYpZfde/exec';
+var FORM_BASE = 'https://docs.google.com/forms/d/e/1FAIpQLSfb10Tw2rQAZJuXhx-lH-g9elG4aLyFT04SgVPqLuzU_1nF3w/viewform';
+var EZ = 'entry.558291562';
+var EL = 'entry.2090894203';
+var EC = 'entry.1958107668';
+
+// 시설물 데이터 (시설물대장 기준)
+var facilities = {
+  'FAC001': { name: '화장실',        area: '1코스', loc: '가-1', type: '이정표', coord: '36.117007,127.332534' },
+  'FAC002': { name: '관광안내도',    area: '1코스', loc: '가-2', type: '안내판', coord: '36.117350,127.332492' },
+  'FAC003': { name: '은사수길둘레길', area: '1코스', loc: '가-3', type: '안내도', coord: '36.117360,127.332565' },
+  'FAC004': { name: '도립공원안내도', area: '1코스', loc: '가-4', type: '안내도', coord: '36.117360,127.332565' },
+  'FAC005': { name: '은사수길둘레길', area: '1코스', loc: '가-5', type: '안내도', coord: '36.117360,127.332565' },
+};
+
+// ── URL 파라미터 파싱 ───────────────────────────
+function getParam(name) {
+  var search = window.location.search;
+  if (!search && window.location.href.indexOf('?') > -1) {
+    search = '?' + window.location.href.split('?')[1];
+  }
+  var params = new URLSearchParams(search);
+  return params.get(name);
+}
+
+// ── 화면 전환 ───────────────────────────────────
+function showOk(fid) {
+  var f = facilities[fid];
+  if (!f) { showFake('등록되지 않은 시설물'); return; }
+
+  document.getElementById('facName').textContent  = f.name;
+  document.getElementById('facName2').textContent = f.name;
+  document.getElementById('areaCode').textContent = f.area;
+  document.getElementById('locCode').textContent  = f.loc;
+  document.getElementById('facType').textContent  = f.type;
+
+  var formUrl = FORM_BASE
+    + '?' + EZ + '=' + encodeURIComponent(f.area)
+    + '&' + EL + '=' + encodeURIComponent(f.loc)
+    + '&' + EC + '=' + encodeURIComponent(f.coord);
+
+  document.getElementById('btnStart').href = formUrl;
+  document.getElementById('btnMap').href   = 'https://www.google.com/maps?q=' + f.coord;
+
+  document.getElementById('loading').style.display  = 'none';
+  document.getElementById('okScreen').style.display = 'block';
+}
+
+function showFake(reason) {
+  document.getElementById('errMsg').textContent = reason || '보안서명 불일치 — 위조된 QR입니다';
+  document.getElementById('loading').style.display    = 'none';
+  document.getElementById('fakeScreen').style.display = 'block';
+}
+
+// ── 메인 실행 ───────────────────────────────────
+var fid = getParam('fid');
+var sig = getParam('sig');
+
+if (!fid || !sig) {
+  showFake('파라미터 없음 — QR코드를 스캔해서 접속해 주세요');
+} else {
+  // 앱스 스크립트 API 호출로 검증
+  var verifyUrl = API_URL + '?fid=' + encodeURIComponent(fid) + '&sig=' + encodeURIComponent(sig) + '&mode=verify';
+
+  fetch(verifyUrl)
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.valid) {
+        showOk(fid);
+      } else {
+        showFake(data.reason || '보안서명 불일치');
+      }
+    })
+    .catch(function() {
+      // API 호출 실패 시 로컬 검증으로 대체
+      if (facilities[fid]) {
+        showOk(fid);
+      } else {
+        showFake('시스템 오류 — 담당자에게 문의하세요');
+      }
+    });
+}
+</script>
+</body>
+</html>
