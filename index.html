@@ -196,12 +196,7 @@ if (!fid || !sig) {
       }
     })
     .catch(function() {
-      // API 호출 실패 시 로컬 검증으로 대체
-      if (facilities[fid]) {
-        showOk(fid);
-      } else {
-        showFake('시스템 오류 — 담당자에게 문의하세요');
-      }
+      showFake('보안 서버 연결 실패 — 잠시 후 다시 시도해주세요');
     });
 }
 </script>
