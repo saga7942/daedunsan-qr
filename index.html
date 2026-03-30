@@ -183,21 +183,22 @@ var sig = getParam('sig');
 if (!fid || !sig) {
   showFake('파라미터 없음 — QR코드를 스캔해서 접속해 주세요');
 } else {
-  // 앱스 스크립트 API 호출로 검증
-  var verifyUrl = API_URL + '?fid=' + encodeURIComponent(fid) + '&sig=' + encodeURIComponent(sig) + '&mode=verify';
+  // 등록된 sig값과 직접 대조
+  var validSigs = {
+    'FAC001': '86d82f58bc19',
+    'FAC002': '7f66dbc2efcb',
+    'FAC003': '5bfb857b3d65',
+    'FAC004': '555b9a0c0247',
+    'FAC005': 'cf8e6892ad28',
+  };
 
-  fetch(verifyUrl)
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      if (data.valid) {
-        showOk(fid);
-      } else {
-        showFake(data.reason || '보안서명 불일치');
-      }
-    })
-    .catch(function() {
-      showFake('보안 서버 연결 실패 — 잠시 후 다시 시도해주세요');
-    });
+  if (!facilities[fid]) {
+    showFake('등록되지 않은 시설물 ID');
+  } else if (!validSigs[fid] || validSigs[fid] !== sig) {
+    showFake('보안서명 불일치 — 위조된 QR입니다');
+  } else {
+    showOk(fid);
+  }
 }
 </script>
 </body>
