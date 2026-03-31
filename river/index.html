@@ -86,7 +86,7 @@ html, body { width: 100%; background: #E3F2FD; }
       <div class="info-cell"><div class="info-label">📍 구역코드</div><div class="info-value" id="zoneCode">-</div></div>
       <div class="info-cell"><div class="info-label">📌 위치코드</div><div class="info-value" id="locCode">-</div></div>
       <div class="info-cell"><div class="info-label">🏞 하천명</div><div class="info-value" id="riverCode">-</div></div>
-      <div class="info-cell"><div class="info-label">🗺 좌표</div><div class="info-value" id="coordVal" style="font-size:12px">-</div></div>
+      <div class="info-cell"><div class="info-label">🔖 시설물 설명</div><div class="info-value" id="coordVal">-</div></div>
     </div>
     <div class="gps-row">🛰 GPS 수집 중... (점검 시작 후 자동 저장)</div>
     <div class="notice-box">⚠ 이 시설물은 하천·계곡 불법 점용 현장점검 대상입니다.<br>아래 버튼을 눌러 <b>현재 상태를 점검·기록</b>해 주세요.</div>
@@ -162,7 +162,7 @@ function showOk(fid) {
   document.getElementById('zoneCode').textContent  = f.zone;
   document.getElementById('locCode').textContent   = f.loc;
   document.getElementById('riverCode').textContent = f.river;
-  document.getElementById('coordVal').textContent  = f.coord;
+  document.getElementById('coordVal').textContent  = f.name;
 
   var formUrl = FORM_BASE
     + '&' + RIVER_EZ + '=' + encodeURIComponent(f.zone)
@@ -199,4 +199,3 @@ if (!fid || !sig) {
 </script>
 </body>
 </html>
-
